@@ -93,6 +93,7 @@ char *ping_address="";
 char *traceroute_address="";
 
 int show_all_hostgroups=TRUE;
+int show_extended_problems=FALSE;
 
 
 authdata current_authdata;
@@ -333,6 +334,11 @@ int process_cgivars(void){
 			if((traceroute_address=(char *)strdup(variables[x]))==NULL)
 				traceroute_address="";
 			strip_html_brackets(traceroute_address);
+		        }
+
+		/* we found the extended_status argument */
+		else if(!strcmp(variables[x],"extended_status")){
+			show_extended_problems=TRUE;
 		        }
 
 	        }
@@ -1400,6 +1406,16 @@ void display_problems(void){
 	servicestatus *temp_servicestatus;
 	int total_service_problems=0;
 
+	char last_check[MAX_DATETIME_LENGTH];
+	time_t current_time;
+	time_t t;
+	int days;
+	int hours;
+	int minutes;
+	int seconds;
+	char state_duration[48];
+	int found;
+
 	/**** MAIN SCREEN (CARD 1) ****/
 	printf("<card id='card1' title='%s Problems'>\n",(display_type==DISPLAY_ALL_PROBLEMS)?"All":"Unhandled");
 	printf("<p align='center' mode='nowrap'>\n");
@@ -1440,7 +1456,45 @@ void display_problems(void){
 			printf("UNR");
 		else
 			printf("???");
-		printf("<go href='%s' method='post'><postfield name='host' value='%s'/></go></anchor></td>",STATUSWML_CGI,temp_host->name);
+		printf("<go href='%s' method='post'><postfield name='host' value='%s'/>",STATUSWML_CGI,temp_host->name);
+
+		if (show_extended_problems==TRUE) {
+			printf("<setvar name='info' value='%s' />", (temp_hoststatus->plugin_output==NULL)?"":html_encode(temp_hoststatus->plugin_output,TRUE));
+
+			get_time_string(&temp_hoststatus->last_check,last_check,sizeof(last_check)-1,SHORT_DATE_TIME);
+			printf("<setvar name='lastcheck' value='%s' />",last_check);
+
+			current_time=time(NULL);
+			if(temp_hoststatus->last_state_change==(time_t)0)
+				t=current_time-program_start;
+			else
+				t=current_time-temp_hoststatus->last_state_change;
+			get_time_breakdown((unsigned long)t,&days,&hours,&minutes,&seconds);
+			snprintf(state_duration,sizeof(state_duration)-1,"%2dd %2dh %2dm %2ds%s",days,hours,minutes,seconds,(temp_hoststatus->last_state_change==(time_t)0)?"+":"");
+			printf("<setvar name='duration' value='%s' />",state_duration);
+
+			printf("<setvar name='properties' value='");
+			found=0;
+			if(temp_hoststatus->checks_enabled==FALSE){
+				printf("%sChecks disabled",(found==1)?", ":"");
+				found=1;
+			        }
+			if(temp_hoststatus->notifications_enabled==FALSE){
+				printf("%sNotifications disabled",(found==1)?", ":"");
+				found=1;
+			        }
+			if(temp_hoststatus->problem_has_been_acknowledged==TRUE){
+				printf("%sProblem acknowledged",(found==1)?", ":"");
+				found=1;
+			        }
+			if(temp_hoststatus->scheduled_downtime_depth>0){
+				printf("%sIn scheduled downtime",(found==1)?", ":"");
+				found=1;
+			        }
+			printf("' />");
+			}
+
+		printf("</go></anchor></td>");
 		printf("<td>%s</td></tr>\n",temp_host->name);
 	        }
 
@@ -1495,7 +1549,45 @@ void display_problems(void){
 			printf("UNK");
 		else
 			printf("???");
-		printf("<go href='%s' method='post'><postfield name='host' value='%s'/><postfield name='service' value='%s'/></go></anchor></td>",STATUSWML_CGI,temp_service->host_name,temp_service->description);
+		printf("<go href='%s' method='post'><postfield name='host' value='%s'/><postfield name='service' value='%s'/>",STATUSWML_CGI,temp_service->host_name,temp_service->description);
+
+		if (show_extended_problems==TRUE) {
+			printf("<setvar name='info' value='%s' />",(temp_servicestatus->plugin_output==NULL)?"":html_encode(temp_servicestatus->plugin_output,TRUE));
+
+			get_time_string(&temp_servicestatus->last_check,last_check,sizeof(last_check)-1,SHORT_DATE_TIME);
+			printf("<setvar name='lastcheck' value='%s' />",last_check);
+
+			current_time=time(NULL);
+			if(temp_servicestatus->last_state_change==(time_t)0)
+				t=current_time-program_start;
+			else
+				t=current_time-temp_servicestatus->last_state_change;
+			get_time_breakdown((unsigned long)t,&days,&hours,&minutes,&seconds);
+			snprintf(state_duration,sizeof(state_duration)-1,"%2dd %2dh %2dm %2ds%s",days,hours,minutes,seconds,(temp_servicestatus->last_state_change==(time_t)0)?"+":"");
+			printf("<setvar name='duration' value='%s' />",state_duration);
+
+			printf("<setvar name='properties' value='");
+			found=0;
+			if(temp_servicestatus->checks_enabled==FALSE){
+				printf("%sChecks disabled",(found==1)?", ":"");
+				found=1;
+			        }
+			if(temp_servicestatus->notifications_enabled==FALSE){
+				printf("%sNotifications disabled",(found==1)?", ":"");
+				found=1;
+			        }
+			if(temp_servicestatus->problem_has_been_acknowledged==TRUE){
+				printf("%sProblem acknowledged",(found==1)?", ":"");
+				found=1;
+			        }
+			if(temp_servicestatus->scheduled_downtime_depth>0){
+				printf("%sIn scheduled downtime",(found==1)?", ":"");
+				found=1;
+			        }
+			printf("' />");
+			}
+
+		printf("</go></anchor></td>");
 		printf("<td>%s/%s</td></tr>\n",temp_service->host_name,temp_service->description);
 	        }
 
