@@ -1,3 +1,10 @@
+nagios3 (3.2.0-4ubuntu2+elbandi1) lucid; urgency=low
+
+  [ Andras Elso ]
+  * send extended status if display problems
+
+ -- Andras Elso <elso.andras@gmail.com>  Mon, 21 Mar 2011 16:21:22 +0000
+
 nagios3 (3.2.0-4ubuntu2) lucid; urgency=low
 
   * debian/control: Add nagios3 to nagios3-cgi "Replaces" since .cgi files
@@ -563,4 +570,5 @@ nagios2 (0rc1-2.0-0) unreleased; urgency=low
   * lots of initial packaging work.  init script, user management, etc.
 
  -- sean finney <seanius@debian.org>  Sat, 03 Dec 2005 15:29:40 +0100
+
 
