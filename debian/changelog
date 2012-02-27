@@ -1,3 +1,18 @@
+nagios3 (3.2.0-4ubuntu2.2+elbandi1) lucid; urgency=low
+
+  * Merge from ubuntu security
+
+ -- Andras Elso <elso.andras@gmail.com>  Mon, 27 Feb 2012 14:34:27 +0100
+
+nagios3 (3.2.0-4ubuntu2.2) lucid-security; urgency=low
+
+  * SECURITY UPDATE: Cross-site scripting in layer url
+    - debian/patches/96_security_CVE-2011-1523.dpatch: use escape_string
+      on layer name in cgi/statusmap.c.
+    - CVE-2011-1523
+
+ -- Marc Deslauriers <marc.deslauriers@ubuntu.com>  Tue, 07 Jun 2011 08:41:41 -0400
+
 nagios3 (3.2.0-4ubuntu2+elbandi1) lucid; urgency=low
 
   [ Andras Elso ]
